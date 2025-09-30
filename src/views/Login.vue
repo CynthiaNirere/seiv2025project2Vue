@@ -34,8 +34,8 @@
       <p v-if="error" class="server-error">{{ error }}</p>
 
       <div class="actions">
-        <button type="submit" :disabled="!formValid || loading">
-          <span v-if="!loading">Login</span>
+        <button type="submit" class="action-text" :disabled="!formValid || loading">
+          <span v-if="!loading">LOGIN</span>
           <span v-else>Logging in…</span>
         </button>
       </div>
@@ -94,7 +94,7 @@ async function submit() {
 
 <style scoped>
 .login-page {
-  min-height: 70vh;
+  min-height: calc(100vh - 64px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -102,21 +102,21 @@ async function submit() {
 }
 .login-card {
   width: 100%;
-  max-width: 420px;
-  padding: 1.6rem;
-  border-radius: 8px;
-  border: 1px solid #ddd;
+  max-width: 540px;
+  padding: 1.2rem 1.6rem 1.6rem 1.6rem;
+  border-radius: 6px;
+  border: 1px solid #eee;
   background: #fff;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
 }
 .login-card h2 { margin: 0 0 1rem 0; font-size: 1.25rem; text-align: center; }
 .field { display: block; margin-bottom: 0.9rem; }
 .field span { display:block; font-size:0.9rem; color:#333; margin-bottom:0.3rem; }
-.field input { width: 100%; padding: 0.55rem 0.6rem; border: 1px solid #cfcfcf; border-radius: 4px; outline: none; box-sizing: border-box; }
+.field input { width: 100%; padding: 0.75rem 0.85rem; border: 1px solid #e9e9e9; border-radius: 6px; outline: none; box-sizing: border-box; background: #f5f5f5; }
 .field input.invalid { border-color: #e53935; }
 .error { color: #e53935; font-size: 0.85rem; margin-top: 0.25rem; display:block; }
 .server-error { color: #b00020; margin: 0.5rem 0; text-align:center; }
 .actions { display:flex; justify-content:flex-end; margin-top: 0.8rem; }
-button[disabled] { opacity: 0.6; cursor: not-allowed; }
-button { background: #1976d2; color: white; border: none; padding: 0.55rem 0.9rem; border-radius: 4px; cursor: pointer; }
+.action-text { border:none; background:transparent; color:#7a1220; font-weight:600; cursor:pointer }
+.action-text[disabled] { opacity:0.6; cursor:not-allowed }
 </style>

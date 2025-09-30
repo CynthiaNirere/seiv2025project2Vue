@@ -1,5 +1,5 @@
 <template>
-  <nav class="app-nav">
+  <nav class="app-nav" v-if="route.name !== 'login'">
     <div class="app-container">
       <div class="left">
         <router-link to="/" class="brand">
@@ -25,13 +25,14 @@
 <script setup>
 import ocLogo from '/oc-logo-white.png'
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import authService from '../services/authService.js'
 
 const title = ref('Tutorials')
 const name = ref('')
 const logoURL = ref('')
 const router = useRouter()
+const route = useRoute()
 const user = ref(null)
 
 onMounted(() => {

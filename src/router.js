@@ -1,35 +1,26 @@
 import { createRouter, createWebHistory } from "vue-router";
-import CoursesList from "./views/CoursesList.vue";
-import EditCourse from "./views/EditCourse.vue";
 import AddCourse from "./views/AddCourse.vue";
-import ViewCourse from "./views/ViewCourse.vue";
+
+const routes = [
+  {
+    path: "/add",
+    name: "add",
+    component: AddCourse,
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: "/",
-      name: "courses",
-      component: CoursesList,
-    },
-    {
-      path: "/edit/:id",
-      name: "edit",
-      component: EditCourse,
-      props: true,
-    },
-    {
-      path: "/add",
-      name: "add",
-      component: AddCourse,
-    },
-    {
-      path: "/view/:id",
-      name: "view",
-      component: ViewCourse,
-      props: true,
-    },
-  ],
+  routes,
 });
+
+try {
+  router.beforeEach((to, from, next) => {
+    console.log(`Navigating from ${from.name || 'null'} to ${to.name}`);
+    next();
+  });
+} catch (error) {
+  console.error("Error configuring router:", error);
+}
 
 export default router;

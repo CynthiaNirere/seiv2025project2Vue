@@ -4,6 +4,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+const form = ref(null);
 const valid = ref(true);
 const course = ref({
   id: null,
@@ -16,39 +17,89 @@ const course = ref({
 });
 const message = ref("Enter course data and click save");
 
-const saveCourse = () => {
+const saveCourse = async () => {
+  if (form.value && !form.value.validate()) {
+    message.value = "Please fix the validation errors.";
+    return;
+  }
+
+  // Map frontend field names to backend field names
   const data = {
-    dept: course.value.dept,
-    courseNumber: course.value.courseNumber,
-    level: course.value.level,
-    hours: course.value.hours,
-    name: course.value.name,
-    description: course.value.description,
+    Dept: course.value.dept,
+    Course_Number: course.value.courseNumber,
+    Level: course.value.level ? parseInt(course.value.level) : null,
+    Hours: course.value.hours ? parseInt(course.value.hours) : null,
+    Name: course.value.name,
+    Description: course.value.description,
   };
   
-  CourseServices.createCourse(data)
-    .then((response) => {
-      course.value.id = response.data.id;
-      router.push({ name: "courses-list" }); // Adjust route name as needed when Fabiola finishes her page
-    })
-    .catch((e) => {
-      message.value = e.response?.data?.message || "Error creating course";
-    });
+  try {
+    const response = await CourseServices.createCourse(data);
+    course.value.id = response.data.Course_Number;
+    message.value = "Course saved successfully!";
+    
+    // Reset form after success
+    course.value = { 
+      id: null, 
+      dept: "", 
+      courseNumber: "", 
+      level: "", 
+      hours: "", 
+      name: "", 
+      description: "" 
+    };
+    
+    if (form.value) {
+      form.value.resetValidation();
+    }
+    
+    // Optional: Show success message for a few seconds then reset
+    setTimeout(() => {
+      message.value = "Enter course data and click save";
+    }, 3000);
+    
+  } catch (e) {
+    console.error("Error creating course:", e);
+    message.value = e.response?.data?.message || "Error creating course. Please check console for details.";
+    
+    // Clear error message after delay
+    setTimeout(() => {
+      message.value = "Enter course data and click save";
+    }, 5000);
+  }
 };
 
 const cancel = () => {
-  router.push({ name: "courses-list" }); // Adjust route name as needed when Fabiola finishes her page
+  message.value = "Cancelled. Please re-enter data if needed.";
+  course.value = { 
+    id: null, 
+    dept: "", 
+    courseNumber: "", 
+    level: "", 
+    hours: "", 
+    name: "", 
+    description: "" 
+  };
+  
+  if (form.value) {
+    form.value.resetValidation();
+  }
+  
+  // Reset message after delay
+  setTimeout(() => {
+    message.value = "Enter course data and click save";
+  }, 2000);
 };
 
 // Validation rules
 const deptRules = [
   (v) => !!v || "Department is required",
-  (v) => (v && v.length <= 10) || "Department must be less than 10 characters",
+  (v) => (v && v.length <= 25) || "Department must be less than 25 characters",
 ];
 
 const courseNumberRules = [
   (v) => !!v || "Course number is required",
-  (v) => (v && v.length <= 20) || "Course number must be less than 20 characters",
+  (v) => (v && v.length <= 45) || "Course number must be less than 45 characters",
 ];
 
 const levelRules = [
@@ -63,7 +114,11 @@ const hoursRules = [
 
 const nameRules = [
   (v) => !!v || "Course name is required",
-  (v) => (v && v.length <= 100) || "Course name must be less than 100 characters",
+  (v) => (v && v.length <= 45) || "Course name must be less than 45 characters",
+];
+
+const descriptionRules = [
+  (v) => !v || v.length <= 255 || "Description must be less than 255 characters",
 ];
 </script>
 
@@ -84,9 +139,9 @@ const nameRules = [
               v-model="course.dept"
               id="dept"
               :rules="deptRules"
-              :counter="10"
+              :counter="25"
               label="Department"
-              placeholder="e.g., ACCT, BIBL"
+              placeholder="e.g., ACCT, BIBL, CS"
               required
             ></v-text-field>
           </v-col>
@@ -96,9 +151,9 @@ const nameRules = [
               v-model="course.courseNumber"
               id="courseNumber"
               :rules="courseNumberRules"
-              :counter="20"
+              :counter="45"
               label="Course Number"
-              placeholder="e.g., ACCT-0010"
+              placeholder="e.g., ACCT-0010, CS-1234"
               required
             ></v-text-field>
           </v-col>
@@ -112,7 +167,7 @@ const nameRules = [
               :rules="levelRules"
               type="number"
               label="Level"
-              placeholder="e.g., 0, 3"
+              placeholder="e.g., 0, 1, 2, 3"
               required
             ></v-text-field>
           </v-col>
@@ -124,7 +179,7 @@ const nameRules = [
               :rules="hoursRules"
               type="number"
               label="Hours"
-              placeholder="e.g., 0, 1, 2"
+              placeholder="e.g., 0, 1, 2, 3"
               required
             ></v-text-field>
           </v-col>
@@ -136,7 +191,7 @@ const nameRules = [
               v-model="course.name"
               id="name"
               :rules="nameRules"
-              :counter="100"
+              :counter="45"
               label="Course Name"
               placeholder="e.g., Accounting Lower Division"
               required
@@ -149,10 +204,11 @@ const nameRules = [
             <v-textarea
               v-model="course.description"
               id="description"
+              :rules="descriptionRules"
               label="Description"
               placeholder="Enter course description (optional)"
               rows="4"
-              :counter="500"
+              :counter="255"
             ></v-textarea>
           </v-col>
         </v-row>
@@ -180,3 +236,10 @@ const nameRules = [
     </v-container>
   </div>
 </template>
+
+<style scoped>
+h4 {
+  color: #1976d2;
+  font-weight: 500;
+}
+</style>

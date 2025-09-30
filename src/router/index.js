@@ -3,8 +3,7 @@ import authService from '../services/authService.js'
 
 const routes = [
   { path: '/login', name: 'login', component: () => import('../views/Login.vue'), meta: { public: true } },
-  { path: '/', redirect: '/home' },
-  { path: '/home', name: 'home', component: () => import('../views/Home.vue') },
+  { path: '/', redirect: '/login' },
 ]
 
 const router = createRouter({

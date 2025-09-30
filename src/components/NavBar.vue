@@ -1,23 +1,23 @@
 <template>
   <nav class="app-nav">
-    <div class="left">
-      <router-link to="/" class="brand">
-  <img class="logo-img" :src="logoURL || '/oc-logo-white.png'" alt="OC" />
-        <span class="title">Tutorials</span>
-      </router-link>
-    </div>
+    <div class="app-container">
+      <div class="left">
+        <router-link to="/" class="brand">
+          <img class="logo-img" :src="logoURL || '/oc-logo-white.png'" alt="OC" />
+          <span class="title">Courses</span>
+        </router-link>
+      </div>
 
-    <div class="nav-right">
-      <router-link v-if="user" :to="{ name: 'home' }" class="nav-link">Home</router-link>
+      <div class="nav-right">
+        <template v-if="!user">
+          <router-link :to="{ name: 'login' }" class="login-btn">Login</router-link>
+        </template>
 
-      <template v-if="!user">
-        <router-link :to="{ name: 'login' }" class="login-btn">Login</router-link>
-      </template>
-
-      <template v-else>
-        <span class="user-email">{{ user.email }}</span>
-        <button class="link-btn" @click="logout">Logout</button>
-      </template>
+        <template v-else>
+          <span class="user-email">{{ user.email }}</span>
+          <button class="link-btn" @click="logout">Logout</button>
+        </template>
+      </div>
     </div>
   </nav>
 </template>
@@ -55,16 +55,16 @@ function logout() {
 <style scoped>
 .app-nav {
   display:flex;
-  justify-content:space-between;
+  justify-content:center;
   align-items:center;
-  padding:0 1.2rem;
+  padding:0;
   height:64px; /* taller app bar */
   background:#fff;
-  border-bottom:1px solid #e6e6e6;
+  border-bottom:1px solid #e6e6e6; /* full-width line */
 }
 .brand { display:flex; align-items:center; gap:0.6rem; text-decoration:none; color:inherit }
 .left { display:flex; align-items:center }
-.logo-img { width:38px; height:38px; display:inline-block }
+.logo-img { width:48px; height:48px; display:inline-block; object-fit:contain }
 .title { font-size:1.05rem; margin-left:0.6rem; font-weight:600; color:#333 }
 .nav-right { display:flex; gap:0.75rem; align-items:center; }
 .nav-right > * { margin-left: 6px }
@@ -81,4 +81,30 @@ function logout() {
   box-shadow: 0 1px 0 rgba(0,0,0,0.02);
 }
 .login-btn:hover { background:#f0f0f0 }
+
+.app-container {
+  width: 100%;
+  max-width: 1280px;
+  padding: 0 1.2rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .app-nav { height:56px; padding: 0 0.8rem }
+  .logo-img { width:34px; height:34px }
+  .title { font-size:0.98rem }
+  .nav-right { gap:0.5rem }
+  .login-btn { padding:6px 9px }
+}
+
+@media (min-width: 900px) {
+  .app-nav { height:72px }
+  .logo-img { width:64px; height:64px }
+  .title { font-size:1.25rem }
+  .nav-right { gap:1rem }
+  .login-btn { padding:10px 14px }
+}
 </style>

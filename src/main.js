@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router.js';
@@ -36,3 +37,15 @@ try {
 } catch (error) {
   console.error('Error mounting Vue app:', error);
 }
+=======
+import { createApp } from 'vue'
+import './style.css'
+import App from './App.vue'
+ import router from './router'
+
+   const app = createApp(App)
+   app.use(router)
+   app.mount('#app')
+
+//createApp(App).mount('#app')
+>>>>>>> 569c5b8 (added edit page)

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import axios from 'axios';
 
 const apiClient = axios.create({
@@ -45,4 +46,15 @@ apiClient.interceptors.response.use(
   }
 );
 
+=======
+import axios from "axios";
+
+const apiClient = axios.create({
+  baseURL: "http://localhost:3000/api", // Change this to your backend API URL
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+>>>>>>> 569c5b8 (added edit page)
 export default apiClient;

@@ -29,7 +29,6 @@ const goToAddCourse = () => {
 
 const editCourse = (course) => {
   // If you later add an edit route, update this to the correct name/params
-  // For now navigate to add page and consider implementing edit mode there
   router.push({ name: "add", params: { courseNumber: course.Course_Number || course.CourseNumber || course.id } });
 };
 

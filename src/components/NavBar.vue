@@ -43,7 +43,6 @@ onMounted(() => {
   window.addEventListener('auth-changed', () => {
     user.value = authService.getUser()
   })
-
 })
 
 function logout() {

@@ -1,9 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import authService from '../services/authService.js'
+import Home from '../views/Home.vue'
+import AddCourse from '../views/addCourse.vue'
 
 const routes = [
-  { path: '/login', name: 'login', component: () => import('../views/Login.vue'), meta: { public: true } },
-  { path: '/', redirect: '/login' },
+  { path: '/', name: 'home', component: Home },
+  { path: '/add', name: 'add', component: AddCourse },
+  { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
 const router = createRouter({
@@ -11,15 +13,5 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to, from, next) => {
-  // allow public routes
-  if (to.meta && to.meta.public) return next()
-  if (to.name === 'login') return next()
-
-  if (!authService.isAuthenticated()) {
-    return next({ name: 'login', query: { redirect: to.fullPath } })
-  }
-  next()
-})
 
 export default router

@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const STORAGE_KEY = 'tutorial_user';
 const TOKEN_KEY = 'tutorial_token';
-const API_URL = (import.meta.env.VITE_API_URL) || 'http://localhost:3101'; // set VITE_API_URL in frontend .env if needed
+const API_URL = (import.meta.env.VITE_API_URL) || 'http://localhost:3000'; // default fallback
 
 function getUser() {
   try {
@@ -29,9 +29,14 @@ export default {
       throw new Error('Password must be at least 8 characters');
     }
 
+    // Decide endpoint: prefer relative path so Vite proxy (vite.config.js) handles CORS.
+    // If proxy is not desired you can force absolute by setting FORCE_ABSOLUTE_API=1 in env and rebuilding.
+    const FORCE_ABSOLUTE = import.meta.env.VITE_FORCE_ABSOLUTE_API === '1';
+    const endpoint = FORCE_ABSOLUTE ? `${API_URL}/auth/login` : '/auth/login';
+
     // call backend login endpoint
     try {
-      const res = await axios.post(`${API_URL}/auth/login`, { email, password }, { withCredentials: true });
+      const res = await axios.post(endpoint, { email, password }, { withCredentials: true });
       // expected backend response: { token: 'jwt', user: { email, ... } }  (adjust to your backend)
       const { token, user } = res.data;
       if (token) localStorage.setItem(TOKEN_KEY, token);
@@ -49,9 +54,23 @@ export default {
           throw new Error(`Network Error: could not reach backend at ${API_URL}. Is the backend running and configured to allow CORS from the frontend (http://localhost:5173)?`);
         }
 
-        // Otherwise extract a message from the response body if available
-        const msg = err.response?.data?.message || err.message || 'Login failed';
-        throw new Error(msg);
+        // If 404, guide user on likely causes.
+        if (err.response.status === 404) {
+          throw new Error('Login endpoint not found (404). Confirm backend defines POST /auth/login or adjust authService endpoint.');
+        }
+
+        // Build richer error info for other statuses
+        const status = err.response.status;
+        const serverMsg = err.response.data?.message || err.response.data?.error || null;
+        const fallback = err.message || 'Login failed';
+        let composed = `Login failed (HTTP ${status})`;
+        if (serverMsg) composed += `: ${serverMsg}`; else composed += `: ${fallback}`;
+        // Optionally include raw payload for debugging (comment out in prod)
+        if (import.meta.env.DEV && err.response.data && typeof err.response.data === 'object') {
+          // eslint-disable-next-line no-console
+          console.debug('Raw backend error payload:', err.response.data);
+        }
+        throw new Error(composed);
     }
   },
 

@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+
 const STORAGE_KEY = 'tutorial_user';
 const TOKEN_KEY = 'tutorial_token';
 const API_URL = (import.meta.env.VITE_API_URL) || 'http://localhost:3101'; // set VITE_API_URL in frontend .env if needed
@@ -38,9 +39,19 @@ export default {
       window.dispatchEvent(new Event('auth-changed'));
       return user || { email };
     } catch (err) {
-      // extract useful message
-      const msg = err?.response?.data?.message || err.message || 'Login failed';
-      throw new Error(msg);
+        // Log full error to the browser console for debugging
+        // (Network Error commonly means the backend is unreachable or the request was blocked by CORS)
+        // eslint-disable-next-line no-console
+        console.error('authService.login error:', err);
+
+        // If there is no response, this is likely a network/CORS issue (server not running or blocked)
+        if (!err || !err.response) {
+          throw new Error(`Network Error: could not reach backend at ${API_URL}. Is the backend running and configured to allow CORS from the frontend (http://localhost:5173)?`);
+        }
+
+        // Otherwise extract a message from the response body if available
+        const msg = err.response?.data?.message || err.message || 'Login failed';
+        throw new Error(msg);
     }
   },
 

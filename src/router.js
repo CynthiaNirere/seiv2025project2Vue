@@ -1,7 +1,13 @@
 import { createRouter, createWebHistory } from "vue-router";
-import AddCourse from "./views/AddCourse.vue";
+import AddCourse from "./views/addCourse.vue";
+import ViewCourse from "./views/viewCourse.vue";
 
 const routes = [
+  {
+    path: "/",
+    name: "view",
+    component: ViewCourse,
+  },
   {
     path: "/add",
     name: "add",

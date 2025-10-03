@@ -3,7 +3,7 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
 
-const BaseURL= process.env.APP_ENV="developmnet" ? "/" : "/seiv/p2/t1/";
+const BaseURL= process.env.APP_ENV="developmnet" ? "/" : "/seiv2025/p2/t1/";
 
 
 export default defineConfig({

@@ -5,11 +5,11 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'Home', redirect: { name: 'CourseList' } },
 
-    
+    // LIST PAGE
+    { path: '/courses', name: 'CourseList', component: () => import('./views/CourseList.vue') },
+
     // ADD
     { path: '/courses/add', name: 'AddCourse', component: () => import('./views/addCourse.vue') },
-// LIST PAGE
-    { path: '/courses', name: 'CourseList', component: () => import('./views/courseList.vue') },
 
     // DETAIL (optional if you need it)
     { path: '/courses/:courseNumber', name: 'ViewCourse', component: () => import('./views/viewCourse.vue'), props: true },

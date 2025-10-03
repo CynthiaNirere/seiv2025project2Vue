@@ -6,7 +6,7 @@ const router = createRouter({
     { path: '/', name: 'Home', redirect: { name: 'CourseList' } },
 
     // LIST PAGE
-    { path: '/courses', name: 'CourseList', component: () => import('./views/courseList.vue') },
+    { path: '/courses', name: 'CourseList', component: () => import('.views/courseList.vue') },
 
     // ADD
     { path: '/courses/add', name: 'AddCourse', component: () => import('./views/addCourse.vue') },

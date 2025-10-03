@@ -10,10 +10,12 @@ jobs:
   aws-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
         with:
           ref: dev
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
       - run: npm install
       - run: npm run build
       - name: Deploy to Server
@@ -24,4 +26,4 @@ jobs:
           SOURCE: "dist/"
           REMOTE_HOST: "project2.eaglesoftwareteam.com"
           REMOTE_USER: ubuntu
-          TARGET: "/var/www/html/project2/2025/t1"
+          TARGET: "/var/www/html/seiv/p2/t1"

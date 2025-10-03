@@ -1,14 +1,14 @@
 // src/services/courseServices.js
-import axios from 'axios';
+import apiClient from './services.js';
 
 // With Vite proxy, baseURL is just /api
-const api = axios.create({ baseURL: '/api' });
+const api = apiClient;
 
 export default {
   // GET /api/courses
   getAllCourses: () => api.get('/courses'),
 
-  // GET /api/courses/:courseNumber
+  
   getCourse: (courseNumber) => api.get(`/courses/${encodeURIComponent(courseNumber)}`),
 
   // POST /api/courses

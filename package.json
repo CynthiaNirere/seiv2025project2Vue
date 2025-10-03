@@ -4,13 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "cross-env APP_ENV=development vite",
+    "build": "cross-env APP_ENV=production vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
     "axios": "^1.11.0",
+    "cross-env": "^10.1.0",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1",
     "vuetify": "^3.10.3",

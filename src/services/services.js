@@ -1,13 +1,14 @@
 // src/services/services.js
 import axios from 'axios';
+var baseURL= import.meta.env.DEV ? "http://localhost/course-t1/" : "/course-t1";
 
 const apiClient = axios.create({
-  baseURL: '/api', // let Vite proxy route this to the backend
+  baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-  },
-  timeout: 10000,
+  }
+
 });
 
 // Request interceptor for debugging

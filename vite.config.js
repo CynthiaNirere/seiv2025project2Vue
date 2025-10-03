@@ -3,6 +3,9 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
 
+const BaseURL= process.env.APP_ENV="developmnet" ? "/" : "/seiv/p2/t1/";
+
+
 export default defineConfig({
   plugins: [
     vue(),
@@ -11,17 +14,12 @@ export default defineConfig({
   server: {
     port: 5173,        // Vite dev server
     strictPort: true,  // fail if 5173 is taken
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001', // backend server
-        changeOrigin: true,
-        secure: false,
-      },
-    },
   },
+  base: BaseURL,
   vue: {
     compilerOptions: {
       isCustomElement: (tag) => tag.startsWith('v-') || tag.startsWith('V-'),
     },
   },
-});
+  
+})

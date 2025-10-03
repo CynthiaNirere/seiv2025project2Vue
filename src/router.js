@@ -1,37 +1,25 @@
-import { createRouter, createWebHistory } from "vue-router";
-import EditCourse from "./views/editCourse.vue";
-import AddCourse from "./views/AddCourse.vue";
-import ViewCourse from "./views/ViewCourse.vue";
+import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: "/",
-      name: "view",
-      component: ViewCourse,
-    },
-    {
-      path: "/courses/edit/:id",
-      name: "editCourse",
-      component: EditCourse,
-      props: true,
-    },
-    {
-      path: "/add",
-      name: "add",
-      component: AddCourse,
-    },
+    { path: '/', name: 'Home', redirect: { name: 'CourseList' } },
+
+    // LIST PAGE
+    { path: '/courses', name: 'CourseList', component: () => import('./views/CourseList.vue') },
+
+    // ADD
+    { path: '/courses/add', name: 'AddCourse', component: () => import('./views/AddCourse.vue') },
+
+    // DETAIL (optional if you need it)
+    { path: '/courses/:courseNumber', name: 'ViewCourse', component: () => import('./views/ViewCourse.vue'), props: true },
+
+    // EDIT
+    { path: '/courses/:courseNumber/edit', name: 'EditCourse', component: () => import('./views/EditCourse.vue'), props: true },
+
+    // 404 fallback (optional)
+    { path: '/:pathMatch(.*)*', redirect: { name: 'CourseList' } },
   ],
 });
-
-try {
-  router.beforeEach((to, from, next) => {
-    console.log(`Navigating from ${from.name || 'null'} to ${to.name}`);
-    next();
-  });
-} catch (error) {
-  console.error("Error configuring router:", error);
-}
 
 export default router;

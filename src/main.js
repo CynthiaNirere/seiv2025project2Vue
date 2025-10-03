@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router.js';
@@ -6,14 +5,13 @@ import { createVuetify } from 'vuetify';
 import 'vuetify/styles';
 import '@mdi/font/css/materialdesignicons.css';
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
-import WebFont from 'webfontloader'; // Import as a module for configuration
+import WebFont from 'webfontloader';
 
 // Configure WebFontLoader to load Roboto (Vuetify's default font)
 WebFont.load({
   google: {
     families: ['Roboto:100,300,400,500,700,900&display=swap'],
   },
-  // Optional: Add a callback for debugging
   active: () => console.log('WebFont loaded successfully'),
   inactive: () => console.warn('WebFont failed to load'),
 });
@@ -37,15 +35,3 @@ try {
 } catch (error) {
   console.error('Error mounting Vue app:', error);
 }
-=======
-import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
- import router from './router'
-
-   const app = createApp(App)
-   app.use(router)
-   app.mount('#app')
-
-//createApp(App).mount('#app')
->>>>>>> 569c5b8 (added edit page)

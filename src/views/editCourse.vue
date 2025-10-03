@@ -1,164 +1,186 @@
 <script setup>
 import CourseServices from "../services/courseServices";
 import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 const router = useRouter();
-const valid = ref(false);
-const course = ref({});
-const message = ref("Enter data and click save");
+const route = useRoute();
+const form = ref(null);
+const valid = ref(true);
+const loading = ref(false);
 
-// Entry level options for dropdown
-const entryLevels = ref([
-  "Beginner",
-  "Intermediate",
-  "Advanced",
-  "Expert"
-]);
-
-const props = defineProps({
-  id: {
-    required: true,
-  },
+// Use DB-shaped keys in the form model
+const course = ref({
+  Dept: "",
+  Course_Number: "",
+  Level: "",
+  Hours: "",
+  Name: "",
+  Description: "",
 });
+const message = ref("Loading course data...");
 
-const retrieveCourse = () => {
-  CourseServices.getCourse(props.id)
-    .then((response) => {
-      course.value = response.data;
-    })
-    .catch((e) => {
-      message.value = e.response?.data?.message || "Error retrieving course";
-    });
+const loadCourse = async () => {
+  const courseNumber = route.params.courseNumber;
+  if (!courseNumber) {
+    router.push({ name: "CourseList" });
+    return;
+  }
+  loading.value = true;
+  try {
+    const response = await CourseServices.getCourse(courseNumber);
+    const data = response.data || {};
+    // keep the exact DB keys
+    course.value = {
+      Dept: data.Dept ?? "",
+      Course_Number: data.Course_Number ?? "",
+      Level: (data.Level ?? "")?.toString(),
+      Hours: (data.Hours ?? "")?.toString(),
+      Name: data.Name ?? "",
+      Description: data.Description ?? "",
+    };
+    message.value = "Edit course data and click update";
+  } catch (e) {
+    console.error("Error loading course:", e);
+    message.value = e.response?.data?.message || "Error loading course data";
+  } finally {
+    loading.value = false;
+  }
 };
 
-const saveCourse = () => {
-  const data = {
-    name: course.value.name,
-    description: course.value.description,
-    entryLevel: course.value.entryLevel,
-    duration: course.value.duration,
-    instructor: course.value.instructor,
-    credits: course.value.credits,
+const updateCourse = async () => {
+  if (form.value && !form.value.validate()) {
+    message.value = "Please fix the validation errors.";
+    return;
+  }
+  // Only updatable fields (do NOT change primary key)
+  const payload = {
+    Dept: course.value.Dept,
+    Level: course.value.Level ? parseInt(course.value.Level) : null,
+    Hours: course.value.Hours ? parseInt(course.value.Hours) : null,
+    Name: course.value.Name,
+    Description: course.value.Description,
   };
-  
-  CourseServices.updateCourse(props.id, data)
-    .then((response) => {
-      course.value.id = response.data.id;
-      message.value = "Course updated successfully!";
-      
-      // Redirect to course view or courses list
-      router.push({
-        name: "courses", // or "viewCourse" with params: { id: course.value.id }
-      });
-    })
-    .catch((e) => {
-      message.value = e.response?.data?.message || "Error updating course";
-    });
+
+  try {
+    await CourseServices.updateCourse(course.value.Course_Number, payload);
+    message.value = "Course updated successfully!";
+    setTimeout(() => router.push({ name: "CourseList" }), 900);
+  } catch (e) {
+    console.error("Error updating course:", e);
+    message.value = e.response?.data?.message || "Error updating course.";
+    setTimeout(() => (message.value = "Edit course data and click update"), 3000);
+  }
 };
 
-const cancel = () => {
-  router.push({
-    name: "courses", // Redirect to courses list
-  });
-};
+const cancel = () => router.push({ name: "CourseList" });
 
-onMounted(() => {
-  retrieveCourse();
-});
+onMounted(loadCourse);
+
+// Simple rules
+const req = (msg) => (v) => !!v || msg;
+const isNum = (msg) => (v) => (v === "" || !isNaN(v)) || msg;
 </script>
 
 <template>
-  <div>
-    <v-container>
-      <v-toolbar color="primary" dark>
-        <v-toolbar-title>Edit Course</v-toolbar-title>
-      </v-toolbar>
-      <br />
-      <v-alert
-        v-if="message"
-        :type="message.includes('success') ? 'success' : 'info'"
-        dismissible
-      >
-        {{ message }}
-      </v-alert>
-      <br />
-      <h4>Course ID: {{ id }}</h4>
-      <br />
-      
-      <v-form ref="form" v-model="valid" lazy-validation>
-        <v-text-field
-          v-model="course.name"
-          id="name"
-          :counter="100"
-          label="Course Name"
-          :rules="[(v) => !!v || 'Course name is required']"
-          required
-        ></v-text-field>
+  <v-container>
+    <v-toolbar>
+      <v-toolbar-title>Edit Course</v-toolbar-title>
+    </v-toolbar>
 
-        <v-textarea
-          v-model="course.description"
-          id="description"
-          :counter="500"
-          label="Description"
-          rows="4"
-          :rules="[(v) => !!v || 'Description is required']"
-          required
-        ></v-textarea>
+    <br />
+    <h4>{{ message }}</h4>
+    <br />
 
-        <v-select
-          v-model="course.entryLevel"
-          :items="entryLevels"
-          label="Entry Level"
-          :rules="[(v) => !!v || 'Entry level is required']"
-          required
-        ></v-select>
+    <v-progress-linear v-if="loading" indeterminate color="primary" />
 
-        <v-text-field
-          v-model="course.duration"
-          id="duration"
-          label="Duration (e.g., 8 weeks, 3 months)"
-          :counter="50"
-        ></v-text-field>
+    <v-form ref="form" v-model="valid" lazy-validation v-if="!loading">
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="course.Dept"
+            :rules="[req('Department is required')]"
+            :counter="25"
+            label="Department"
+            placeholder="e.g., ACCT, BIBL, CS"
+            required
+          />
+        </v-col>
 
-        <v-text-field
-          v-model="course.instructor"
-          id="instructor"
-          label="Instructor Name"
-          :counter="100"
-        ></v-text-field>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="course.Course_Number"
+            :rules="[req('Course number is required')]"
+            :counter="45"
+            label="Course Number"
+            disabled
+            hint="Course number (primary key) cannot be changed"
+            persistent-hint
+          />
+        </v-col>
+      </v-row>
 
-        <v-text-field
-          v-model.number="course.credits"
-          id="credits"
-          label="Credits"
-          type="number"
-          min="0"
-        ></v-text-field>
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="course.Level"
+            :rules="[req('Level is required'), isNum('Level must be a number')]"
+            type="number"
+            label="Level"
+            placeholder="e.g., 0, 1, 2, 3"
+            required
+          />
+        </v-col>
 
-        <v-divider class="my-4"></v-divider>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="course.Hours"
+            :rules="[req('Hours is required'), isNum('Hours must be a number')]"
+            type="number"
+            label="Hours"
+            placeholder="e.g., 0, 1, 2, 3"
+            required
+          />
+        </v-col>
+      </v-row>
 
-        <v-btn
-          :disabled="!valid"
-          color="success"
-          class="mr-4"
-          @click="saveCourse"
-        >
-          <v-icon left>mdi-content-save</v-icon>
-          Save Changes
-        </v-btn>
+      <v-row>
+        <v-col cols="12">
+          <v-text-field
+            v-model="course.Name"
+            :rules="[req('Course name is required')]"
+            :counter="45"
+            label="Course Name"
+            placeholder="e.g., Accounting Lower Division"
+            required
+          />
+        </v-col>
+      </v-row>
 
-        <v-btn color="error" class="mr-4" @click="cancel">
-          <v-icon left>mdi-cancel</v-icon>
-          Cancel
-        </v-btn>
-      </v-form>
-    </v-container>
-  </div>
+      <v-row>
+        <v-col cols="12">
+          <v-textarea
+            v-model="course.Description"
+            label="Description"
+            placeholder="Enter course description (optional)"
+            rows="4"
+            :counter="255"
+          />
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col cols="12">
+          <v-btn :disabled="!valid" color="primary" class="mr-4" @click="updateCourse">
+            Update Course
+          </v-btn>
+          <v-btn color="error" class="mr-4" @click="cancel">Cancel</v-btn>
+        </v-col>
+      </v-row>
+    </v-form>
+  </v-container>
 </template>
 
 <style scoped>
-.v-container {
-  max-width: 800px;
-}
+h4 { color: #1976d2; font-weight: 500; }
 </style>

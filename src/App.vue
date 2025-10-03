@@ -1,24 +1,15 @@
-<<<<<<< HEAD
 <template>
   <v-app>
+    <!-- Global header -->
     <MenuBar />
-    <router-view />
+
+    <!-- Main content area -->
+    <v-main class="bg-grey-lighten-4 py-6">
+      <router-view />
+    </v-main>
   </v-app>
 </template>
 
 <script setup>
-import MenuBar from './components/MenuBar.vue'; // Adjust path if necessary
+import MenuBar from './components/MenuBar.vue';
 </script>
-=======
-<script setup>
-// You can remove or keep any imports here
-</script>
-
-<template>
-  <router-view />
-</template>
-
-<style scoped>
-/* You can keep or remove styles */
-</style>
->>>>>>> 569c5b8 (added edit page)

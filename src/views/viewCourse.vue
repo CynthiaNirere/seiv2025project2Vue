@@ -1,96 +1,103 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
 import CourseServices from "../services/courseServices";
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
 
 const router = useRouter();
-const courses = ref([]);
-const message = ref("");  // Empty message by default
+const route = useRoute();
 const loading = ref(false);
+const course = ref(null);
+const message = ref("Loading course data...");
+const showDeleteDialog = ref(false);
+const deleteMessage = ref("Are you sure you want to delete this course? This action cannot be undone.");
 
-const retrieveCourses = async () => {
+const loadCourse = async () => {
+  const courseNumber = route.params.courseNumber;
+  if (!courseNumber) {
+    router.push({ name: "CourseList" });
+    return;
+  }
+
   loading.value = true;
   try {
-    const res = await CourseServices.getAllCourses();
-    // Expect backend to return array in res.data
-    courses.value = res.data || [];
+    const response = await CourseServices.getCourse(courseNumber);
+    course.value = response.data; // already in DB shape
+    message.value = "";
   } catch (e) {
-    console.error("Failed to load courses:", e);
-    message.value = e.response?.data?.message || "Failed to load courses";
+    console.error("Error loading course:", e);
+    message.value = e.response?.data?.message || "Error loading course data";
   } finally {
     loading.value = false;
   }
 };
 
-const goToAddCourse = () => {
-  // Router in this project registers the add route with name 'add'
-  router.push({ name: "add" });
+const backToList = () => {
+  router.push({ name: "CourseList" });
 };
 
-const editCourse = (course) => {
-  // If you later add an edit route, update this to the correct name/params
-  router.push({ name: "add", params: { courseNumber: course.Course_Number || course.CourseNumber || course.id } });
-};
-
-const deleteCourse = async (course) => {
-  const courseNumber = course.Course_Number || course.CourseNumber || course.id;
-  if (!courseNumber) {
-    message.value = "Unable to delete: missing course identifier.";
-    return;
+const goToEdit = () => {
+  if (course.value?.Course_Number) {
+    router.push({ name: "EditCourse", params: { courseNumber: course.value.Course_Number } });
   }
+};
+
+const confirmDelete = async () => {
+  if (!course.value?.Course_Number) return;
 
   try {
-    await CourseServices.deleteCourse(courseNumber);
-    message.value = "Course deleted";
-    // Refresh list
-    await retrieveCourses();
+    await CourseServices.deleteCourse(course.value.Course_Number);
+    // On success, navigate back
+    backToList();
   } catch (e) {
-    console.error("Delete failed:", e);
-    message.value = e.response?.data?.message || "Delete failed";
+    console.error("Error deleting course:", e);
+    message.value = e.response?.data?.message || "Error deleting course";
   }
 };
 
-onMounted(() => retrieveCourses());
+const cancelDelete = () => {
+  showDeleteDialog.value = false;
+};
+
+onMounted(loadCourse);
 </script>
 
 <template>
-  <div>
-    <v-container>
-      <v-toolbar>
-        <v-toolbar-title>Courses</v-toolbar-title>
-      </v-toolbar>
-      <br />
+  <v-container>
+    <v-toolbar>
+      <v-toolbar-title>Course Details</v-toolbar-title>
+    </v-toolbar>
+    <br />
+    <v-progress-linear v-if="loading" indeterminate color="primary" />
+    <h4 v-else-if="message">{{ message }}</h4>
+
+    <div v-else>
+      <p><strong>Department:</strong> {{ course.Dept }}</p>
+      <p><strong>Course Number:</strong> {{ course.Course_Number }}</p>
+      <p><strong>Name:</strong> {{ course.Name }}</p>
+      <p><strong>Level:</strong> {{ course.Level }}</p>
+      <p><strong>Hours:</strong> {{ course.Hours }}</p>
+      <p><strong>Description:</strong> {{ course.Description }}</p>
+
+      <v-btn color="primary" class="mr-2" @click="goToEdit">Edit</v-btn>
+      <v-btn color="error" class="mr-2" @click="showDeleteDialog = true">Delete</v-btn>
+      <v-btn color="secondary" @click="backToList">Back to List</v-btn>
+    </div>
+
+    <!-- Delete Confirmation Dialog -->
+    <v-dialog v-model="showDeleteDialog" max-width="500">
       <v-card>
-        <v-card-title>
-          <v-btn class="mx-2" color="success" @click="goToAddCourse">
-            Add Course
-          </v-btn>
-        </v-card-title>
-
-        <v-data-table :items="courses" :loading="loading" class="elevation-1">
-          <template #item.Dept="{ item }">
-            {{ item.Dept }}
-          </template>
-          <template #item.Course_Number="{ item }">
-            {{ item.Course_Number }}
-          </template>
-          <template #item.Name="{ item }">
-            {{ item.Name }}
-          </template>
-          <template #item.Description="{ item }">
-            {{ item.Description }}
-          </template>
-
-          <template #item.actions="{ item }">
-            <v-icon small class="mx-2" @click="editCourse(item)">mdi-pencil</v-icon>
-            <v-icon small class="mx-2" @click="deleteCourse(item)">mdi-trash-can</v-icon>
-          </template>
-
-          <template #no-data>
-            No courses available.
-          </template>
-        </v-data-table>
+        <v-card-title class="text-h5">Confirm Delete</v-card-title>
+        <v-card-text>{{ deleteMessage }}</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="secondary" @click="cancelDelete">Cancel</v-btn>
+          <v-btn color="error" @click="confirmDelete">Delete</v-btn>
+        </v-card-actions>
       </v-card>
-    </v-container>
-  </div>
+    </v-dialog>
+  </v-container>
 </template>
+
+<style scoped>
+h4 { color: #1976d2; font-weight: 500; }
+</style>
